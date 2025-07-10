@@ -433,7 +433,7 @@ ALTER TABLE Flights
 ADD CONSTRAINT chk_flight_duration CHECK (Flight_Duration > 0);
 */
 
-
+use airline123;
 
 SELECT 
     CONSTRAINT_NAME, 
@@ -747,241 +747,446 @@ FROM Flights
 WHERE Status <> 'Delayed';  -- Using '<>' operator
 
 
+-- Logical operators: AND, OR, NOT
+
+-- Find flights from Delhi to Mumbai that are on time and have available seats.
+SELECT * FROM Flights 
+WHERE Departure_Airport = 'Delhi (DEL)' 
+AND Arrival_Airport = 'Mumbai (BOM)' 
+AND Status = 'On Time' 
+AND Seats_Available > 0;
 
 
--- ---------------------------------- Task ------------------------------------------
--- add a column then write a query to enter all details at 1 time.
-ALTER TABLE Flights ADD Flight_Status varchar(20);
+-- Find flights that either depart from Delhi or arrive in Delhi.
+SELECT * FROM Flights 
+WHERE Departure_Airport = 'Delhi (DEL)' 
+OR Arrival_Airport = 'Delhi (DEL)';
 
-select * from Flights;
+-- Find flights that are not delayed.
+SELECT * FROM Flights 
+WHERE NOT Status = 'Delayed';
 
--- insert same value in a table column
-UPDATE Flights
-SET Flight_Status = 'Scheduled'
-WHERE Flight_ID IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12,13,14,15);
+-- Find all unique arrival airports for flights that are on time and have more than 50 seats available.
+SELECT DISTINCT Arrival_Airport FROM Flights 
+WHERE Status = 'On Time' 
+AND Seats_Available > 50;
 
--- insert multiple value in a table column
-UPDATE Flights SET Flight_Status = 
-  CASE
-    WHEN Flight_ID IN (1, 2, 3) THEN 'Scheduled' 
-    WHEN Flight_ID IN (4, 5) THEN 'Departed'
-    WHEN Flight_ID IN (6,11,13) THEN 'Arrived'
-    WHEN Flight_ID IN (7,12) THEN 'Delayed'
-    WHEN Flight_ID IN (8,14,15) THEN 'Cancelled'
-    WHEN Flight_ID IN (9) THEN 'Diverted' 
-    WHEN Flight_ID IN (10) THEN 'Held' 
-    ELSE 'Unknown' 
-  END
-  WHERE Flight_ID IN  (1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12,13,14,15);
+-- Find all unique departure airports for flights that are either delayed or cancelled.
+SELECT DISTINCT Departure_Airport FROM Flights 
+WHERE Status IN ('Delayed', 'Cancelled');
+
+-- Find flights that either depart from Bangalore or arrive in Kolkata, but are not on time.
+SELECT * FROM Flights 
+WHERE (Departure_Airport = 'Bangalore (BLR)' OR Arrival_Airport = 'Kolkata (CCU)') 
+AND NOT Status = 'On Time';
+
+-- Find flights that are on time and have a flight duration of more than 120 minutes.
+SELECT * FROM Flights 
+WHERE Status = 'On Time' 
+AND Flight_Duration > 120;
+
+-- Find flights that are not departing from Delhi and are either arriving in Mumbai or Chennai.
+SELECT * FROM Flights 
+WHERE NOT Departure_Airport = 'Delhi (DEL)' 
+AND (Arrival_Airport = 'Mumbai (BOM)' OR Arrival_Airport = 'Chennai (MAA)');
+
+-- Find flights that are either delayed or cancelled, and have less than 30 seats available.
+SELECT * FROM Flights 
+WHERE (Status = 'Delayed' OR Status = 'Cancelled') 
+AND Seats_Available < 30;
+
+-- Find flights from Delhi to any destination that are either on time or have more than 50 seats available.
+SELECT * FROM Flights 
+WHERE Departure_Airport = 'Delhi (DEL)' 
+AND (Status = 'On Time' OR Seats_Available > 50);
+
+
+-- String operators: LIKE, REGEXP, NOT LIKE
+
+-- Find flights with flight numbers starting with 'AI'.
+SELECT * FROM Flights 
+WHERE Flight_Number LIKE 'AI%';
+
+-- Find flights that have 'Delhi' in either the departure or arrival airport.
+SELECT * FROM Flights 
+WHERE Departure_Airport REGEXP 'Delhi' 
+OR Arrival_Airport REGEXP 'Delhi';
+
+-- Find flights that do not go to Chennai.
+SELECT * FROM Flights 
+WHERE Arrival_Airport NOT LIKE 'Chennai (MAA)';
+
+-- Find flights that do not have '737' in the aircraft type.
+SELECT * FROM Flights 
+WHERE Aircraft_Type NOT LIKE '%737%';
+
+-- Find flights that have 'Bangalore' in either the departure or arrival airport.
+SELECT * FROM Flights 
+WHERE Departure_Airport REGEXP 'Bangalore' 
+OR Arrival_Airport REGEXP 'Bangalore';
+
+
+-- Set operators: UNION, UNION All, INTERSECT, EXCEPT or DIFFERENCE
+
+--  Find all unique arrival airports from flights departing from Delhi and flights arriving in Delhi.
+SELECT Arrival_Airport FROM Flights 
+WHERE Departure_Airport = 'Delhi (DEL)'
+UNION
+SELECT Departure_Airport FROM Flights 
+WHERE Arrival_Airport = 'Delhi (DEL)';
+
+SELECT * FROM Flights 
+WHERE Departure_Airport = 'Delhi (DEL)'
+UNION
+SELECT * FROM Flights 
+WHERE Arrival_Airport = 'Delhi (DEL)';
+
+/*
+ Find flights that are both departing from Delhi and arriving in Mumbai 
+ (Note: INTERSECT is not supported in all SQL databases, so this is a conceptual example).
+*/
+SELECT * FROM Flights 
+WHERE Departure_Airport = 'Delhi (DEL)' 
+INTERSECT 
+SELECT * FROM Flights 
+WHERE Arrival_Airport = 'Mumbai (BOM)';
+
+
+-- Control flow operators: IF, CASE
+
+-- Create a query that categorizes flights based on their status.
+SELECT Flight_ID, Flight_Number, 
+CASE 
+    WHEN Status = 'On Time' THEN 'Flight is on schedule'
+    WHEN Status = 'Delayed' THEN 'Flight is delayed'
+    WHEN Status = 'Cancelled' THEN 'Flight is cancelled'
+END AS Flight_Status_Description
+FROM Flights;
+
+-- Create a query that provides a summary of flight statuses with counts.
+SELECT Status, COUNT(*) AS Flight_Count 
+FROM Flights 
+GROUP BY Status;
+
+-- Create a query that categorizes flights based on their duration.
+SELECT Flight_ID, Flight_Number, 
+CASE 
+    WHEN Flight_Duration < 120 THEN 'Short Haul'
+    WHEN Flight_Duration BETWEEN 120 AND 180 THEN 'Medium Haul'
+    ELSE 'Long Haul'
+END AS Flight_Duration_Category
+FROM Flights;
+
+
+-- Bitwise operators
+
+/*
+Get Binary Number -
+
+-------512, 256, 128, 64, 32, 16, 8, 4, 2,1
+
+Binary of 5 is - 0101
+Binary of 3 is - 0011
+
+Common Bitwise Operators in MySQL
+AND (&): Compares each bit of two numbers and returns a new number with bits set to 1 only where both bits are 1.
+OR (|): Compares each bit of two numbers and returns a new number with bits set to 1 where at least one of the bits
+is 1.
+XOR (^): Compares each bit of two numbers and returns a new number with bits set to 1 where the bits are different.
+NOT (~): Inverts the bits of a number.
+Left Shift (<<): Shifts the bits of a number to the left by a specified number of positions.
+Right Shift (>>): Shifts the bits of a number to the right by a specified number of positions.
+
+Bitwise operators can be useful in various scenarios, such as:
+
+1. Flags and Permissions: Using bitwise operations to manage user permissions or feature flags.
+2. Data Compression: Storing multiple boolean values in a single integer.
+3. Efficient Calculations: Performing low-level data manipulation or optimizations.
+
+Let's say we have a table called users that stores user permissions as a bitmask.
+Each permission corresponds to a specific bit in an integer:
+
+1 (0001) - Read permission
+2 (0010) - Write permission
+4 (0100) - Execute permission
+8 (1000) - Delete permission
+*/
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    permissions INT NOT NULL
+);
+
+-- Let's insert some users with different permissions:
+INSERT INTO users (username, email, password_hash, permissions) VALUES
+('Alice', 'alice@example.com', 'hashed_password_1', 3),  -- Read (1) + Write (2) = 3 (0011)
+('Bob', 'bob@example.com', 'hashed_password_2', 5),    -- Read (1) + Execute (4) = 5 (0101)
+('Charlie', 'charlie@example.com', 'hashed_password_3', 8), -- Delete (8) = 8 (1000)
+('David', 'david@example.com', 'hashed_password_4', 15),  -- All permissions (1111)
+('Eve', 'eve@example.com', 'hashed_password_5', 1),      -- Read (1)
+('Frank', 'frank@example.com', 'hashed_password_6', 6),   -- Write (2) + Execute (4) = 6 (0110)
+('Grace', 'grace@example.com', 'hashed_password_7', 10),  -- Write (2) + Delete (8) = 10 (1010)
+('Hannah', 'hannah@example.com', 'hashed_password_8', 12), -- Execute (4) + Delete (8) = 12 (1100)
+('Isaac', 'isaac@example.com', 'hashed_password_9', 0),   -- No permissions
+('Jack', 'jack@example.com', 'hashed_password_10', 7);    -- Read (1) + Write (2) + Execute (4) = 7 (0111)
+
+SELECT * FROM users;
+
+SELECT * FROM users WHERE (permissions & 1) = 1;  
+-- Users with Read permission
+
+SELECT * FROM users WHERE (permissions & 3) = 3;  
+-- Users with Read and Write permissions
+
+SELECT * FROM users WHERE (permissions & 2) = 2;  
+-- Users with Write permission
+
+SELECT * FROM users WHERE (permissions & 4) = 4;  
+-- Users with Execute permission
+
+SELECT * FROM users WHERE (permissions & 8) = 8;  
+-- Users with Delete permission
+select * from users;
+-- Add Permission
+UPDATE users SET permissions = permissions & 4 WHERE username = 'Alice';
+UPDATE users SET permissions = permissions | 4 WHERE username = 'Alice';
+/*
+The error message you're encountering indicates that MySQL's "safe update mode" is enabled.
+This mode prevents you from executing UPDATE or DELETE statements that do not include
+a WHERE clause that uses a key column (like a primary key). This is a safety feature
+to prevent accidental updates or deletions of all rows in a table.
+*/
+--  Disable Safe Update Mode Temporarily
+SET SQL_SAFE_UPDATES = 0;
+
+SET SQL_SAFE_UPDATES = 1;  -- Re-enable safe updates
+
+
+-- Remove Permission
+UPDATE users SET permissions = permissions & ~1 WHERE username = 'Bob';
+
+-- Toggle Permission
+UPDATE users SET permissions = permissions ^ 8 WHERE username = 'Charlie';
+
+-- Count Users with a Specific Permission
+SELECT COUNT(*) AS user_count FROM users WHERE (permissions & 1) = 1;
+
+-- List Users with No Permissions
+SELECT * FROM users WHERE permissions = 0;
+
+-- List Users with All Permissions
+SELECT * FROM users WHERE permissions = 15;  -- 15 = 1111 in binary
+
+-- Get Permissions as Binary String
+SELECT username, BIN(permissions) AS permissions_binary FROM users;
+
+-- Find Users with At Least One Permission
+SELECT * FROM users WHERE permissions > 0;
+
+-- Find Users with No Read Permission
+SELECT * FROM users WHERE (permissions & 1) = 0;  -- Users without Read permission
+
+
+--  Find Users with Either Write or Execute Permission
+SELECT * FROM users WHERE (permissions & (2 | 4)) > 0;  -- Users with Write or Execute permission
+
+-- Update Multiple Users' Permissions
+UPDATE users SET permissions = permissions | 8 WHERE username IN ('Alice', 'Bob');
+
+--  Remove All Permissions from a User
+UPDATE users SET permissions = 0 WHERE username = 'Charlie';
+
+-- Check for Users with No Execute Permission
+SELECT * FROM users WHERE (permissions & 4) = 0;
+ -- Users without Execute permission
+
+-- Get Users with Specific Combination of Permissions
+SELECT * FROM users WHERE (permissions & 3) = 3 AND (permissions & 4) = 0;
 
 
 
+
+
+ -- Clauses {Where, Distinct, From, Order By, Group By, Having}
  
+ -- 1. WHERE Clause Queries
 
--- Table-2 Create Passengers table
-CREATE TABLE Passengers (
-  Passenger_ID INT PRIMARY KEY AUTO_INCREMENT, -- Unique identifier for each passenger (Primary Key, Auto Increment)
-  First_Name VARCHAR(50) NOT NULL, -- Passenger's first name (Not Null)
-  Last_Name VARCHAR(50) NOT NULL, -- Passenger's last name (Not Null)
-  Email VARCHAR(100) UNIQUE NOT NULL, -- Passenger's email address (Not Null, must be unique)
-  Phone_Number VARCHAR(15), -- Passenger's phone number (Optional)
-  Date_of_Birth DATE NOT NULL, -- Passenger's date of birth (Not Null)
-  Frequent_Flyer_Number VARCHAR(20) UNIQUE, -- Frequent flyer number (Optional, must be unique)
-  Nationality VARCHAR(50) NOT NULL -- Nationality of the passenger (Not Null)
-);
+ /*
+The WHERE clause is used to filter records in a table based on specific conditions. 
+It is typically used with SELECT, UPDATE, and DELETE statements.
 
+Syntax:
 
--- Insert Records into Passengers Table
-INSERT INTO Passengers (First_Name, Last_Name, Email, Phone_Number, Date_of_Birth, Frequent_Flyer_Number, Nationality)
-VALUES 
-('Rahul', 'Sharma', 'rahul.sharma@example.com', '9876543210', '1990-01-15', 'FF001', 'India'),
-('Priya', 'Verma', 'priya.verma@example.com', '8765432109', '1992-02-20', 'FF002', 'India'),
-('Amit', 'Kumar', 'amit.kumar@example.com', '7654321098', '1988-03-25', 'FF003', 'India'),
-('Sneha', 'Reddy', 'sneha.reddy@example.com', '6543210987', '1995-04-30', 'FF004', 'India'),
-('Vikram', 'Singh', 'vikram.singh@example.com', '5432109876', '1985-05-05', 'FF005', 'India'),
-('Neha', 'Gupta', 'neha.gupta@example.com', '4321098765', '1993-06-10', 'FF006', 'India'),
-('Ravi', 'Patel', 'ravi.patel@example.com', '3210987654', '1987-07-15', 'FF007', 'India'),
-('Anjali', 'Mehta', 'anjali.mehta@example.com', '2109876543', '1991-08-20', 'FF008', 'India'),
-('Karan', 'Bansal', 'karan.bansal@example.com', '1098765432', '1989-09-25', 'FF009', 'India'),
-('Pooja', 'Joshi', 'pooja.joshi@example.com', '0987654321', '1994-10-30', 'FF010', 'India'),
-('Suresh', 'Nair', 'suresh.nair@example.com', '9876543210', '1986-11-05', 'FF011', 'India'),
-('Tina', 'Chopra', 'tina.chopra@example.com', '8765432109', '1992-12-10', 'FF012', 'India'),
-('Mohit', 'Agarwal', 'mohit.agarwal@example.com', '7654321098', '1988-01-15', 'FF013', 'India'),
-('Ritika', 'Sethi', 'ritika.sethi@example.com', '6543210987', '1995-02-20', 'FF014', 'India'),
-('Deepak', 'Kohli', 'deepak.kohli@example.com', '5432109876', '1985-03-25', 'FF015', 'India');
+SELECT column1, column2  
+FROM table_name  
+WHERE condition;  
+ */
+ 
+ -- Select flights that are delayed
+ SELECT * FROM Flights WHERE Status = 'Delayed';
+ 
+ -- Select flights departing from Delhi
+ SELECT * FROM Flights WHERE Departure_Airport = 'Delhi (DEL)';
+ 
+ -- Select flights arriving in Mumbai
+ SELECT * FROM Flights WHERE Arrival_Airport = 'Mumbai (BOM)';
+ 
+ -- Select flights with a duration greater than 120 minutes
+ SELECT * FROM Flights WHERE Flight_Duration > 120;
+ 
+ -- Select flights with available seats less than 30
+ SELECT * FROM Flights WHERE Seats_Available < 30;
+ 
+ -- Select flights that departed after a specific date
+ SELECT * FROM Flights WHERE Departure_Time > '2023-10-01 00:00:00';
+ 
+ -- Select flights with a specific flight number
+ SELECT * FROM Flights WHERE Flight_Number = 'AI101';
+ 
+ -- Select flights that are either cancelled or delayed
+SELECT * FROM Flights WHERE Status IN ('Cancelled', 'Delayed');
 
+-- Select flights with a flight duration between 90 and 150 minutes
+SELECT * FROM Flights WHERE Flight_Duration BETWEEN 90 AND 150;
 
--- Table-3 Create Bookings table
-CREATE TABLE Bookings (
-  Booking_ID INT PRIMARY KEY AUTO_INCREMENT, -- Unique identifier for each booking (Primary Key, Auto Increment)
-  Flight_ID INT NOT NULL, -- Foreign key referencing Flights table (Not Null)
-  Passenger_ID INT NOT NULL, -- Foreign key referencing Passengers table (Not Null)
-  Booking_Date DATETIME NOT NULL, -- Date and time of booking (Not Null)
-  Number_of_Seats INT NOT NULL CHECK (Number_of_Seats > 0), -- Number of seats booked (Not Null, must be greater than zero)
-  Total_Price DECIMAL(10, 2) NOT NULL, -- Total price for the booking (Not Null)
-  Booking_Status ENUM('Confirmed', 'Cancelled', 'Pending') NOT NULL DEFAULT 'Pending', -- Status of the booking (Not Null, default is 'Pending')
-  FOREIGN KEY (Flight_ID) REFERENCES Flights(Flight_ID) ON DELETE CASCADE, -- Foreign key constraint linking to Flights table with cascading delete
-  FOREIGN KEY (Passenger_ID) REFERENCES Passengers(Passenger_ID) ON DELETE CASCADE -- Foreign key constraint linking to Passengers table with cascading delete
-);
-
-truncate Bookings;
--- Insert Records into Bookings Table
-
-INSERT INTO Bookings (Flight_ID, Passenger_ID, Booking_Date, Number_of_Seats, Total_Price, Booking_Status)
-VALUES 
-(1, 1, '2023-09-01 10:00:00', 1, 1500.00, 'Confirmed'),
-(2, 2, '2023-09-02 11:00:00', 2, 3000.00, 'Confirmed'),
-(3, 3, '2023-09-03 12:00:00', 1, 1500.00, 'Confirmed'),
-(4, 4, '2023-09-04 13:00:00', 1, 1500.00, 'Confirmed'),
-(5, 5, '2023-09-05 14:00:00', 1, 1500.00, 'Confirmed'),
-(6, 6, '2023-09-06 15:00:00', 1, 1500.00, 'Confirmed'),
-(7, 7, '2023-09-07 16:00:00', 1, 1500.00, 'Confirmed'),
-(8, 8, '2023-09-08 17:00:00', 1, 1500.00, 'Confirmed'),
-(9, 9, '2023-09-09 18:00:00', 1, 1500.00, 'Confirmed'),
-(10, 10, '2023-09-10 19:00:00', 1, 1500.00, 'Confirmed'),
-(11, 11, '2023-09-11 20:00:00', 1, 1500.00, 'Confirmed'),
-(12, 12, '2023-09-12 21:00:00', 1, 1500.00, 'Confirmed'),
-(13, 13, '2023-09-13 22:00:00', 1, 1500.00, 'Confirmed'),
-(14, 14, '2023-09-14 23:00:00', 1, 1500.00, 'Confirmed'),
-(15, 15, '2023-09-15 09:00:00', 1, 1500.00, 'Confirmed');
+-- Select flights with more than 50 available seats
+SELECT * FROM Flights WHERE Seats_Available > 50;
 
 
--- Table-4 Create Airlines table
-CREATE TABLE Airlines (
-  Airline_ID INT PRIMARY KEY AUTO_INCREMENT, -- Unique identifier for each airline (Primary Key, Auto Increment)
-  Airline_Name VARCHAR(100) NOT NULL, -- Name of the airline (Not Null)
-  IATA_Code VARCHAR(3) UNIQUE NOT NULL, -- IATA code for the airline (Not Null, must be unique)
-  Country VARCHAR(50) NOT NULL, -- Country where the airline is based (Not Null)
-  Established_Year INT CHECK (Established_Year > 1900), -- Year the airline was established (Must be greater than 1900)
-  Headquarter_Location VARCHAR(100) NOT NULL -- Location of the airline's headquarters (Not Null)
-);
 
--- Insert Records into Airlines Table
+-- 2. DISTINCT Clause Queries
+/*
+The DISTINCT clause is used to return unique values from a column by removing duplicates 
+in the result set.
 
-INSERT INTO Airlines (Airline_Name, IATA_Code, Country, Established_Year, Headquarter_Location)
-VALUES 
-('Air India', 'AI', 'India', 1932, 'Mumbai'),
-('IndiGo', '6E', 'India', 2006, 'Gurgaon'),
-('SpiceJet', 'SG', 'India', 2005, 'Gurgaon'),
-('Vistara', 'UK', 'India', 2013, 'Gurgaon'),
-('GoAir', 'G8', 'India', 2005, 'Mumbai'),
-('AirAsia India', 'I5', 'India', 2014, 'Bangalore'),
-('Alliance Air', '9I', 'India', 1996, 'Delhi'),
-('Jet Airways', '9W', 'India', 1993, 'Mumbai'),
-('Air India Express', 'IX', 'India', 2005, 'Kochi'),
-('Star Air', 'S5', 'India', 2019, 'Bangalore'),
-('Akasa Air', 'QP', 'India', 2022, 'Mumbai'),
-('TruJet', '2T', 'India', 2015, 'Hyderabad'),
-('Zoom Air', 'Z5', 'India', 2017, 'Delhi'),
-('Flybig', 'FB', 'India', 2020, 'Indore'),
-('Deccan Charters', 'DC', 'India', 1997, 'Bangalore');
+Syntax:
 
+SELECT DISTINCT column1  
+FROM table_name;  
 
--- Table-5 Create Tickets table
-CREATE TABLE Tickets (
-  Ticket_ID INT PRIMARY KEY AUTO_INCREMENT, -- Unique identifier for each ticket (Primary Key, Auto Increment)
-  Booking_ID INT NOT NULL, -- Foreign key referencing Bookings table (Not Null)
-  Ticket_Price DECIMAL(10, 2) NOT NULL, -- Price of the ticket (Not Null, with two decimal places)
-  Ticket_Status ENUM('Confirmed', 'Cancelled', ' Pending') NOT NULL, -- Status of the ticket (Not Null, must be one of the specified values)
-  Seat_Number VARCHAR(5) NOT NULL, -- Assigned seat number for the ticket (Not Null)
-  Baggage_Allowance INT DEFAULT 0, -- Baggage allowance in kilograms (Default is 0)
-  FOREIGN KEY (Booking_ID) REFERENCES Bookings(Booking_ID) ON DELETE CASCADE -- Foreign key constraint linking to Bookings table with cascading delete
-);
+*/
 
--- Insert Records into Tickets Table
-INSERT INTO Tickets (Booking_ID, Ticket_Price, Ticket_Status, Seat_Number, Baggage_Allowance)
-VALUES 
-(1, 1500.00, 'Confirmed', '1A', 15),
-(2, 1500.00, 'Confirmed', '1B', 20),
-(3, 1500.00, 'Confirmed', '1C', 15),
-(4, 1500.00, 'Confirmed', '1D', 15),
-(5, 1500.00, 'Confirmed', '1E', 15),
-(6, 1500.00, 'Confirmed', '1F', 15),
-(7, 1500.00, 'Confirmed', '1G', 15),
-(8, 1500.00, 'Confirmed', '1H', 15),
-(9, 1500.00, 'Confirmed', '1I', 15),
-(10, 1500.00, 'Confirmed', '1J', 15),
-(11, 1500.00, 'Confirmed', '1K', 15),
-(12, 1500.00, 'Confirmed', '1L', 15),
-(13, 1500.00, 'Confirmed', '1M', 15),
-(14, 1500.00, 'Confirmed', '1N', 15),
-(15, 1500.00, 'Confirmed', '1O', 15);
+select * from flights;
+
+-- Select distinct aircraft types used in flights
+SELECT DISTINCT Aircraft_Type FROM Flights;
+
+-- Select distinct departure airports
+SELECT DISTINCT Departure_Airport FROM Flights;
+
+-- Select distinct arrival airports
+SELECT DISTINCT Arrival_Airport FROM Flights;
+
+-- Select distinct flight statuses
+SELECT DISTINCT Status FROM Flights;
+
+-- Select distinct flight numbers
+SELECT DISTINCT Flight_Number FROM Flights;
+
+-- Select distinct combinations of departure and arrival airports
+SELECT DISTINCT Departure_Airport, Arrival_Airport FROM Flights;
+
+-- Select distinct flight durations
+SELECT DISTINCT Flight_Duration FROM Flights;
+
+-- Select distinct departure times
+SELECT DISTINCT Departure_Time FROM Flights;
+
+-- Select distinct arrival times
+SELECT DISTINCT Arrival_Time FROM Flights;
+
+-- Select distinct seat availability counts
+SELECT DISTINCT Seats_Available FROM Flights;
 
 
--- 1. Select All Records from Each Table
+-- 3. FROM Clause Queries
+/*
+The FROM clause specifies the table or tables from which the data is retrieved. 
+It is a mandatory part of the SELECT statement and can also be used with joins for 
+combining data from multiple tables.
+
+Syntax:
+
+SELECT column1, column2  
+FROM table_name; 
+*/
 
 -- Select all records from Flights table
 SELECT * FROM Flights;
 
--- Select all records from Passengers table
-SELECT * FROM Passengers;
+-- Select flight numbers and statuses from Flights table
+SELECT Flight_Number, Status FROM Flights;
 
--- Select all records from Bookings table
-SELECT * FROM Bookings;
+-- Select departure and arrival airports from Flights table
+SELECT Departure_Airport, Arrival_Airport FROM Flights;
 
--- Select all records from Airlines table
-SELECT * FROM Airlines;
+-- Select flight ID and duration from Flights table
+SELECT Flight_ID, Flight_Duration FROM Flights;
 
--- Select all records from Tickets table
-SELECT * FROM Tickets;
+-- Select all columns from Flights table where status is 'On Time'
+SELECT * FROM Flights WHERE Status = 'On Time';
 
+-- Select all flights with a specific aircraft type
+SELECT * FROM Flights WHERE Aircraft_Type = 'Boeing 737';
 
--- 2. Truncate Each Table
+-- Select all flights departing after a specific time
+SELECT * FROM Flights WHERE Departure_Time > '2023-10-01 12:00:00';
 
--- Truncate the Tickets table
-TRUNCATE TABLE Tickets;
+-- Select all flights arriving in a specific city
+SELECT * FROM Flights WHERE Arrival_Airport = 'Chennai (MAA)';
 
--- Truncate the Bookings table
-TRUNCATE TABLE Bookings;
+-- Select all flights with available seats greater than 40
+SELECT * FROM Flights WHERE Seats_Available > 40;
 
--- Truncate the Passengers table
-TRUNCATE TABLE Passengers;
-
--- Truncate the Flights table
-TRUNCATE TABLE Flights;
-
--- Truncate the Airlines table
-TRUNCATE TABLE Airlines;
+-- Select all flights with a specific flight duration
+SELECT * FROM Flights WHERE Flight_Duration = 120;
 
 
--- 3. Drop Each Table
+-- 4. ORDER BY Clause Queries
+/*
+The ORDER BY clause is used to sort the result set in ascending (ASC) or descending (DESC) order 
+based on one or more columns.
 
--- Drop the Tickets table
-DROP TABLE IF EXISTS Tickets;
+Syntax:
 
--- Drop the Bookings table
-DROP TABLE IF EXISTS Bookings;
+SELECT column1, column2  
+FROM table_name  
+ORDER BY column_name [ASC|DESC];  
+*/
 
--- Drop the Passengers table
-DROP TABLE IF EXISTS Passengers;
+-- Select all flights ordered by Departure_Time
+SELECT * FROM Flights ORDER BY Departure_Time;
 
--- Drop the Flights table
-DROP TABLE IF EXISTS Flights;
+-- Select all flights ordered by Flight_Duration in descending order
+SELECT * FROM Flights ORDER BY Flight_Duration DESC;
 
--- Drop the Airlines table
-DROP TABLE IF EXISTS Airlines;
+-- Select all flights ordered by Seats_Available
+SELECT * FROM Flights ORDER BY Seats_Available;
 
+-- Select all flights ordered by Status and then by Departure_Time
+SELECT * FROM Flights ORDER BY Status, Departure_Time;
 
--- 4. Rename Each Table
+SELECT * FROM Flights ORDER BY Arrival_Airport, Departure_Time;
 
--- Rename the Flights table to Flight_Details
-ALTER TABLE Flights 
-RENAME TO Flight_Details;
+-- Select all flights ordered by Arrival_Airport
+SELECT * FROM Flights ORDER BY Arrival_Airport;
 
--- Rename the Passengers table to Customer
-ALTER TABLE Passengers 
-RENAME TO Customer;
+-- Select all flights ordered by Flight_Number in descending order
+SELECT * FROM Flights ORDER BY Flight_Number DESC;
 
--- Rename the Bookings table to Reservations
-ALTER TABLE Bookings 
-RENAME TO Reservations;
+-- Select all flights ordered by Departure_Airport and then by Flight_Duration
+SELECT * FROM Flights ORDER BY Departure_Airport, Flight_Duration;
 
--- Rename the Airlines table to Airline_Companies
-ALTER TABLE Airlines 
-RENAME TO Airline_Companies;
+-- Select all flights ordered by Arrival_Time in descending order
+SELECT * FROM Flights ORDER BY Arrival_Time DESC;
 
--- Rename the Tickets table to Flight_Tickets
-ALTER TABLE Tickets 
-RENAME TO Flight_Tickets;
+-- Select all flights ordered by Flight_ID
+SELECT * FROM Flights ORDER BY Flight_ID;
 
- 
+-- Select all flights ordered by Arrival_Time
+SELECT * FROM Flights ORDER BY Arrival_Time;
