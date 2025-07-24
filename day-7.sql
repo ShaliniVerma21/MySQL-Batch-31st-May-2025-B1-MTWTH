@@ -316,3 +316,248 @@ SELECT SUM(Flight_Duration) AS Total_On_Time_Flight_Duration FROM Flights WHERE 
 
 -- 20. Count the Number of Flights with a Duration Greater Than 180 Minutes
 SELECT COUNT(*) AS Flights_Over_3_Hours FROM Flights WHERE Flight_Duration > 180;
+
+
+-- Control Flow Functions
+
+-- Classifies flights as long haul or short haul based on duration
+SELECT IF(Flight_Duration > 120, 'Long Haul', 'Short Haul') AS Flight_Type FROM Flights; 
+
+-- Classifies flights as long haul or short haul based on duration using a case statement
+SELECT 
+CASE 
+WHEN Flight_Duration > 120 THEN 'Long Haul' 
+WHEN Flight_Duration <= 120 THEN 'Short Haul' 
+END 
+AS Flight_Type FROM Flights; 
+
+-- other queries
+
+CREATE TABLE Flights_Backup (
+  Flight_ID int PRIMARY KEY,
+  Flight_Number varchar(10) NOT NULL,
+  Departure_Airport varchar(100) NOT NULL,
+  Arrival_Airport varchar(100) NOT NULL,
+  Departure_Time datetime NOT NULL,
+  Arrival_Time datetime NOT NULL,
+  Flight_Duration int NOT NULL,
+  Seats_Available int NOT NULL,
+  Aircraft_type varchar(20),
+  status varchar(20)
+);
+drop table Flights_backup;
+-- copy table data
+INSERT INTO Flights_Backup SELECT * FROM Flights;
+
+select * from Flights_Backup;
+
+
+
+ 
+
+-- Table-2 Create Passengers table
+CREATE TABLE Passengers (
+  Passenger_ID INT PRIMARY KEY AUTO_INCREMENT, -- Unique identifier for each passenger (Primary Key, Auto Increment)
+  First_Name VARCHAR(50) NOT NULL, -- Passenger's first name (Not Null)
+  Last_Name VARCHAR(50) NOT NULL, -- Passenger's last name (Not Null)
+  Email VARCHAR(100) UNIQUE NOT NULL, -- Passenger's email address (Not Null, must be unique)
+  Phone_Number VARCHAR(15), -- Passenger's phone number (Optional)
+  Date_of_Birth DATE NOT NULL, -- Passenger's date of birth (Not Null)
+  Frequent_Flyer_Number VARCHAR(20) UNIQUE, -- Frequent flyer number (Optional, must be unique)
+  Nationality VARCHAR(50) NOT NULL -- Nationality of the passenger (Not Null)
+);
+
+-- Insert Records into Passengers Table
+INSERT INTO Passengers (First_Name, Last_Name, Email, Phone_Number, Date_of_Birth, Frequent_Flyer_Number, Nationality)
+VALUES 
+('Rahul', 'Sharma', 'rahul.sharma@example.com', '9876543210', '1990-01-15', 'FF001', 'India'),
+('Priya', 'Verma', 'priya.verma@example.com', '8765432109', '1992-02-20', 'FF002', 'India'),
+('Amit', 'Kumar', 'amit.kumar@example.com', '7654321098', '1988-03-25', 'FF003', 'India'),
+('Sneha', 'Reddy', 'sneha.reddy@example.com', '6543210987', '1995-04-30', 'FF004', 'India'),
+('Vikram', 'Singh', 'vikram.singh@example.com', '5432109876', '1985-05-05', 'FF005', 'India'),
+('Neha', 'Gupta', 'neha.gupta@example.com', '4321098765', '1993-06-10', 'FF006', 'India'),
+('Ravi', 'Patel', 'ravi.patel@example.com', '3210987654', '1987-07-15', 'FF007', 'India'),
+('Anjali', 'Mehta', 'anjali.mehta@example.com', '2109876543', '1991-08-20', 'FF008', 'India'),
+('Karan', 'Bansal', 'karan.bansal@example.com', '1098765432', '1989-09-25', 'FF009', 'India'),
+('Pooja', 'Joshi', 'pooja.joshi@example.com', '0987654321', '1994-10-30', 'FF010', 'India'),
+('Suresh', 'Nair', 'suresh.nair@example.com', '9876543210', '1986-11-05', 'FF011', 'India'),
+('Tina', 'Chopra', 'tina.chopra@example.com', '8765432109', '1992-12-10', 'FF012', 'India'),
+('Mohit', 'Agarwal', 'mohit.agarwal@example.com', '7654321098', '1988-01-15', 'FF013', 'India'),
+('Ritika', 'Sethi', 'ritika.sethi@example.com', '6543210987', '1995-02-20', 'FF014', 'India'),
+('Deepak', 'Kohli', 'deepak.kohli@example.com', '5432109876', '1985-03-25', 'FF015', 'India');
+
+
+-- Table-3 Create Bookings table
+CREATE TABLE Bookings (
+  Booking_ID INT PRIMARY KEY AUTO_INCREMENT, -- Unique identifier for each booking (Primary Key, Auto Increment)
+  Flight_ID INT NOT NULL, -- Foreign key referencing Flights table (Not Null)
+  Passenger_ID INT NOT NULL, -- Foreign key referencing Passengers table (Not Null)
+  Booking_Date DATETIME NOT NULL, -- Date and time of booking (Not Null)
+  Number_of_Seats INT NOT NULL CHECK (Number_of_Seats > 0), -- Number of seats booked (Not Null, must be greater than zero)
+  Total_Price DECIMAL(10, 2) NOT NULL, -- Total price for the booking (Not Null)
+  Booking_Status ENUM('Confirmed', 'Cancelled', 'Pending') NOT NULL DEFAULT 'Pending', -- Status of the booking (Not Null, default is 'Pending')
+  FOREIGN KEY (Flight_ID) REFERENCES Flights(Flight_ID) ON DELETE CASCADE, -- Foreign key constraint linking to Flights table with cascading delete
+  FOREIGN KEY (Passenger_ID) REFERENCES Passengers(Passenger_ID) ON DELETE CASCADE -- Foreign key constraint linking to Passengers table with cascading delete
+);
+
+truncate Bookings;
+-- Insert Records into Bookings Table
+
+INSERT INTO Bookings (Flight_ID, Passenger_ID, Booking_Date, Number_of_Seats, Total_Price, Booking_Status)
+VALUES 
+(1, 1, '2023-09-01 10:00:00', 1, 1500.00, 'Confirmed'),
+(2, 2, '2023-09-02 11:00:00', 2, 3000.00, 'Confirmed'),
+(3, 3, '2023-09-03 12:00:00', 1, 1500.00, 'Confirmed'),
+(4, 4, '2023-09-04 13:00:00', 1, 1500.00, 'Confirmed'),
+(5, 5, '2023-09-05 14:00:00', 1, 1500.00, 'Confirmed'),
+(6, 6, '2023-09-06 15:00:00', 1, 1500.00, 'Confirmed'),
+(7, 7, '2023-09-07 16:00:00', 1, 1500.00, 'Confirmed'),
+(8, 8, '2023-09-08 17:00:00', 1, 1500.00, 'Confirmed'),
+(9, 9, '2023-09-09 18:00:00', 1, 1500.00, 'Confirmed'),
+(10, 10, '2023-09-10 19:00:00', 1, 1500.00, 'Confirmed'),
+(11, 11, '2023-09-11 20:00:00', 1, 1500.00, 'Confirmed'),
+(12, 12, '2023-09-12 21:00:00', 1, 1500.00, 'Confirmed'),
+(13, 13, '2023-09-13 22:00:00', 1, 1500.00, 'Confirmed'),
+(14, 14, '2023-09-14 23:00:00', 1, 1500.00, 'Confirmed'),
+(15, 15, '2023-09-15 09:00:00', 1, 1500.00, 'Confirmed');
+
+
+-- Table-4 Create Airlines table
+CREATE TABLE Airlines (
+  Airline_ID INT PRIMARY KEY AUTO_INCREMENT, -- Unique identifier for each airline (Primary Key, Auto Increment)
+  Airline_Name VARCHAR(100) NOT NULL, -- Name of the airline (Not Null)
+  IATA_Code VARCHAR(3) UNIQUE NOT NULL, -- IATA code for the airline (Not Null, must be unique)
+  Country VARCHAR(50) NOT NULL, -- Country where the airline is based (Not Null)
+  Established_Year INT CHECK (Established_Year > 1900), -- Year the airline was established (Must be greater than 1900)
+  Headquarter_Location VARCHAR(100) NOT NULL -- Location of the airline's headquarters (Not Null)
+);
+
+-- Insert Records into Airlines Table
+
+INSERT INTO Airlines (Airline_Name, IATA_Code, Country, Established_Year, Headquarter_Location)
+VALUES 
+('Air India', 'AI', 'India', 1932, 'Mumbai'),
+('IndiGo', '6E', 'India', 2006, 'Gurgaon'),
+('SpiceJet', 'SG', 'India', 2005, 'Gurgaon'),
+('Vistara', 'UK', 'India', 2013, 'Gurgaon'),
+('GoAir', 'G8', 'India', 2005, 'Mumbai'),
+('AirAsia India', 'I5', 'India', 2014, 'Bangalore'),
+('Alliance Air', '9I', 'India', 1996, 'Delhi'),
+('Jet Airways', '9W', 'India', 1993, 'Mumbai'),
+('Air India Express', 'IX', 'India', 2005, 'Kochi'),
+('Star Air', 'S5', 'India', 2019, 'Bangalore'),
+('Akasa Air', 'QP', 'India', 2022, 'Mumbai'),
+('TruJet', '2T', 'India', 2015, 'Hyderabad'),
+('Zoom Air', 'Z5', 'India', 2017, 'Delhi'),
+('Flybig', 'FB', 'India', 2020, 'Indore'),
+('Deccan Charters', 'DC', 'India', 1997, 'Bangalore');
+
+
+-- Table-5 Create Tickets table
+CREATE TABLE Tickets (
+  Ticket_ID INT PRIMARY KEY AUTO_INCREMENT, -- Unique identifier for each ticket (Primary Key, Auto Increment)
+  Booking_ID INT NOT NULL, -- Foreign key referencing Bookings table (Not Null)
+  Ticket_Price DECIMAL(10, 2) NOT NULL, -- Price of the ticket (Not Null, with two decimal places)
+  Ticket_Status ENUM('Confirmed', 'Cancelled', ' Pending') NOT NULL, -- Status of the ticket (Not Null, must be one of the specified values)
+  Seat_Number VARCHAR(5) NOT NULL, -- Assigned seat number for the ticket (Not Null)
+  Baggage_Allowance INT DEFAULT 0, -- Baggage allowance in kilograms (Default is 0)
+  FOREIGN KEY (Booking_ID) REFERENCES Bookings(Booking_ID) ON DELETE CASCADE -- Foreign key constraint linking to Bookings table with cascading delete
+);
+
+-- Insert Records into Tickets Table
+INSERT INTO Tickets (Booking_ID, Ticket_Price, Ticket_Status, Seat_Number, Baggage_Allowance)
+VALUES 
+(1, 1500.00, 'Confirmed', '1A', 15),
+(2, 1500.00, 'Confirmed', '1B', 20),
+(3, 1500.00, 'Confirmed', '1C', 15),
+(4, 1500.00, 'Confirmed', '1D', 15),
+(5, 1500.00, 'Confirmed', '1E', 15),
+(6, 1500.00, 'Confirmed', '1F', 15),
+(7, 1500.00, 'Confirmed', '1G', 15),
+(8, 1500.00, 'Confirmed', '1H', 15),
+(9, 1500.00, 'Confirmed', '1I', 15),
+(10, 1500.00, 'Confirmed', '1J', 15),
+(11, 1500.00, 'Confirmed', '1K', 15),
+(12, 1500.00, 'Confirmed', '1L', 15),
+(13, 1500.00, 'Confirmed', '1M', 15),
+(14, 1500.00, 'Confirmed', '1N', 15),
+(15, 1500.00, 'Confirmed', '1O', 15);
+
+
+-- 1. Select All Records from Each Table
+
+-- Select all records from Flights table
+SELECT * FROM Flights;
+
+-- Select all records from Passengers table
+SELECT * FROM Passengers;
+
+-- Select all records from Bookings table
+SELECT * FROM Bookings;
+
+-- Select all records from Airlines table
+SELECT * FROM Airlines;
+
+-- Select all records from Tickets table
+SELECT * FROM Tickets;
+
+
+-- 2. Truncate Each Table
+
+-- Truncate the Tickets table
+TRUNCATE TABLE Tickets;
+
+-- Truncate the Bookings table
+TRUNCATE TABLE Bookings;
+
+-- Truncate the Passengers table
+TRUNCATE TABLE Passengers;
+
+-- Truncate the Flights table
+TRUNCATE TABLE Flights;
+
+-- Truncate the Airlines table
+TRUNCATE TABLE Airlines;
+
+
+-- 3. Drop Each Table
+
+-- Drop the Tickets table
+DROP TABLE IF EXISTS Tickets;
+
+-- Drop the Bookings table
+DROP TABLE IF EXISTS Bookings;
+
+-- Drop the Passengers table
+DROP TABLE IF EXISTS Passengers;
+
+-- Drop the Flights table
+DROP TABLE IF EXISTS Flights;
+
+-- Drop the Airlines table
+DROP TABLE IF EXISTS Airlines;
+
+
+-- 4. Rename Each Table
+
+-- Rename the Flights table to Flight_Details
+ALTER TABLE Flights 
+RENAME TO Flight_Details;
+
+-- Rename the Passengers table to Customer
+ALTER TABLE Passengers 
+RENAME TO Customer;
+
+-- Rename the Bookings table to Reservations
+ALTER TABLE Bookings 
+RENAME TO Reservations;
+
+-- Rename the Airlines table to Airline_Companies
+ALTER TABLE Airlines 
+RENAME TO Airline_Companies;
+
+-- Rename the Tickets table to Flight_Tickets
+ALTER TABLE Tickets 
+RENAME TO Flight_Tickets;
+
+ 
